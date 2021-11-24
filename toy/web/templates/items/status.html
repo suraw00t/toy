@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}From status{% endblock %}
+
+{% block content %}
+
+<div style="padding: 1em;">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="ui form">
+            <div class="field">
+                <label>{{ form.buyer.label }}</label>
+                {{ form.buyer }}
+            </div>
+        </div>
+        <div class="ui form">
+            <div class="field">
+                <label>{{ form.seller.label }}</label>
+                {{ form.seller }}
+            </div>
+        </div>
+        <div class="ui form">
+            <div class="field">
+                <label>{{ form.item.label }}</label>
+                {{ form.item }}
+            </div>
+        </div>
+        <div style="padding: 1em;">
+            <button class="ui primary button" type="submit">
+                Add
+            </button>
+            <a class="ui button" href="{{ url_for('items.index') }}"">
+                Discard
+            </a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,820 @@
+﻿<!DOCTYPE html>
+<html lang="en" hola_ext_inject="disabled">
+<head>
+
+    <!-- Basic Page Needs
+    ================================================== -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>ยินดีต้อนรับสู่ร้านสุรวุฒิ ขาย iPhone</title>
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+
+    <!-- Mobile Specific Metas
+    ================================================== -->
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+
+    <!-- Favicon
+    ================================================== -->
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/img/surawut-2.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/img/surawut-1.png">
+
+    <!-- Stylesheets
+    ================================================== -->
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+
+    <!-- <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"    
+    /> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js";
+        //import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-analytics.js";
+        import {
+            getDatabase,
+            ref,
+            set,
+            push,
+            update,
+            remove,
+            onChildAdded,
+        } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js";
+
+        window.onload = function () {
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            const firebaseConfig = {
+                apiKey: "AIzaSyBxJiLUszHv5nOuCXUI83JDCp8_m9Bk1B0",
+                authDomain: "fb-6310110533.firebaseapp.com",
+                databaseURL: "https://fb-6310110533-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "fb-6310110533",
+                storageBucket: "fb-6310110533.appspot.com",
+                messagingSenderId: "881904490096",
+                appId: "1:881904490096:web:10cf3c2d4633fc2dd446b5",
+                measurementId: "G-RG78E1ZYNF"
+            };
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            //const analytics = getAnalytics(app);
+            // Get a reference to the database service for =>>> 'users' collection (according to your realtime database)
+            // Reference messages collection
+            const database = ref(getDatabase(), "users/");
+
+            const $tableref = document.getElementById("displayTable");
+
+            onChildAdded(database, (data) => {
+                let childData = data.val();
+
+                let $td1 = document.createElement("td");
+                let $td2 = document.createElement("td");
+                let $td3 = document.createElement("td");
+                let $td5 = document.createElement("td");
+                let $td6 = document.createElement("td");
+                let $td7 = document.createElement("td");
+                let $td8 = document.createElement("td");
+
+                $td1.appendChild(document.createTextNode(childData.fullname));
+                $td2.appendChild(document.createTextNode(childData.email));
+                $td3.appendChild(document.createTextNode(childData.model));
+                $td5.appendChild(document.createTextNode(childData.value));
+
+                /// create cell for delete icon
+                let $td4 = document.createElement("td");
+                let deleteIconUI = document.createElement("a");
+                deleteIconUI.className += "glyphicon glyphicon-trash";
+                /// create attribute of user id for reference in deletion
+                deleteIconUI.setAttribute("userid", data.key);
+                deleteIconUI.setAttribute("onClick", "window.location.reload()");
+                deleteIconUI.addEventListener("click", deleteButtonClicked);
+                $td4.appendChild(deleteIconUI);
+                
+                let $td9 = document.createElement("td");
+                let editIconUI = document.createElement("a");
+                editIconUI.className += "glyphicon glyphicon-edit";
+
+                editIconUI.setAttribute("userid", data.key);
+                //editIconUI.setAttribute("onClick", "window.location.reload()");
+                editIconUI.addEventListener("click", editButtonClicked);
+                $td9.appendChild(editIconUI);
+
+
+
+                let $tr = document.createElement("tr");
+                $tr.setAttribute("id", data.key);
+                $tr.appendChild($td1);
+                $tr.appendChild($td2);
+                $tr.appendChild($td3);
+                $tr.appendChild($td5);
+                $tr.appendChild($td9);
+                $tr.appendChild($td4);
+
+                $tableref.appendChild($tr);
+            });
+        };
+
+      //creat function to Insert data
+    const addUserBtnUI = document.getElementById("add-user-btn");
+    addUserBtnUI.addEventListener("click", addUserBtnClicked);
+    addUserBtnUI.setAttribute("onClick", "window.location.reload()");
+
+      /// create function for data insertion
+    function addUserBtnClicked() {
+        const addUserInputsUI = document.getElementsByClassName("user-input");
+        // this object will hold the new user information
+        let newUser = {};
+
+        // loop through View to get the data for the model
+        for (let i = 0, len = addUserInputsUI.length; i < len; i++) {
+            /// get data from html form using attribute name
+            let key = addUserInputsUI[i].getAttribute("data-key");
+            let value = addUserInputsUI[i].value;
+            //console.log(i);
+            //console.log(value);
+            //console.log(key);
+            newUser[key] = value;
+        }
+
+        const userListRef = ref(getDatabase(), "users");
+        const newUserRef = push(userListRef);
+        set(newUserRef, newUser);
+        }
+
+
+        function editButtonClicked(e){
+            e.stopPropagation();
+
+            var userID = e.target.getAttribute("userid");
+            //console.log(userID);
+            //console.log("Hello world");
+        }
+      //creat function to Delete data
+        function deleteButtonClicked(e) {
+        e.stopPropagation();
+        /// get data id which selected by user
+        var userID = e.target.getAttribute("userid");
+        console.log(userID);
+        /// delete that data from database
+        remove(ref(getDatabase(), "users/" + userID));
+      }
+    </script>
+
+    <script>
+        window.onload = function () {
+        
+        var chart = new CanvasJS.Chart("chartContainer", {
+            animationEnabled: true,
+            theme: "light2", // "light1", "light2", "dark1", "dark2"
+            title: {
+                text: "GDP Growth Rate - 2016"
+            },
+            axisY: {
+                title: "Growth Rate (in %)",
+                suffix: "%"
+            },
+            axisX: {
+                title: "Countries"
+            },
+            data: [{
+                type: "column",
+                yValueFormatString: "#,##0.0#\"%\"",
+                dataPoints: [
+                    { label: "India", y: 7.1 },	
+                    { label: "China", y: 6.70 },	
+                    { label: "Indonesia", y: 5.00 },
+                    { label: "Australia", y: 2.50 },	
+                    { label: "Mexico", y: 2.30 },
+                    { label: "UK", y: 1.80 },
+                    { label: "United States", y: 1.60 },
+                    { label: "Japan", y: 1.60 }
+                    
+                ]
+            }]
+        });
+        chart.render();
+        
+        }
+        </script>
+
+    <style>
+        .br {
+    -webkit-filter: blur(5px); /* Safari 6.0 - 9.0 */
+    filter: blur(5px);}
+
+    </style>
+
+</head>
+<body>
+
+    <header id="masthead" class="site-header" data-anchor-target=".hero" data-top="background: rgba(255,255,255,0); padding: 30px 0; box-shadow: 0px 0px 20px 6px rgba(0, 0, 0, 0);" data-top-bottom="background: rgba(255,255,255,1); padding: 10px 0; box-shadow: 0px 0px 20px 6px rgba(0, 0, 0, 0.2);">
+        <nav id="primary-navigation" class="site-navigation">
+            <div class="container">
+                <div class="navbar-header page-scroll">
+
+                    <button type="button" class="navbar-toggle collapsed" data-target="#portfolio-perfect-collapse" aria-expanded="false" >
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    
+                    <a href="#hero" class="icon"><img src="assets/img/surawut-logo2.png" alt="logo"></a>
+
+                </div><!-- /.navbar-header -->
+
+                <div class="main-menu" id="portfolio-perfect-collapse">
+
+                    <ul class="nav navbar-nav navbar-right">
+
+                        <li class="page-scroll"><a href="#hero">หน้าแรก</a></li>
+                        <!-- <li class="page-scroll"><a href="#about">เกี่ยวกับ</a></li> -->
+                        <li class="page-scroll"><a href="#total-order">ยอดสั่งซื้อ</a></li>
+                        <li class="page-scroll"><a href="#music">บริการเพลงออนไลน์</a></li>
+                        
+                    </ul><!-- /.navbar-nav -->
+
+                </div><!-- /.navbar-collapse -->
+
+            </div>
+        </nav><!-- /.primary-navigation -->
+    </header><!-- /#header -->
+
+    <div id="hero" class="hero">
+        <div class="container">
+            <div class="row">
+                <div style="text-align: center; margin-top: 8em;">
+                    <img src="https://www.apple.com/v/iphone-13/b/images/overview/design/static_finish__e6yeptey6uc2_large.jpg" alt="alex-vidal">
+                </div>
+                <div style="margin-top: 5em; text-align: center;">
+                    <h1>Welcome to iPhone 13 Shop</h1>
+                    <div class="page-scroll">
+                        <!-- <p class="job-title">นักศึกษาปี 2 สาขาวิชาวิศวกรรมคอมพิวเตอร์ คณะวิศวกรรมศาสตร์ มหาวิทยาลัยสงขลานครินทร์</p>
+                        <a href="#contact" class="btn btn-fill ">ส่งเมลติดต่อ</a> -->
+                        <div class="clearfix visible-xxs"></div>
+                        <a class="btn btn-fill" style="color: red;" data-toggle="modal" data-target="#portfolioItem1">
+                            <span class="glyphicon"></span>iPhone 13 Red</a>
+                        <a class="btn btn-fill" data-toggle="modal" data-target="#portfolioItem2">
+                            <span class="glyphicon"></span>iPhone 13 Midnight</a>
+                        <a class="btn btn-fill" style="color: #DDD6CE;" data-toggle="modal" data-target="#portfolioItem3">
+                            <span class="glyphicon"></span>iPhone 13 Starlight</a>
+                        <a class="btn btn-fill" style="color: pink;" data-toggle="modal" data-target="#portfolioItem4">
+                            <span class="glyphicon"></span>iPhone 13 Pink</a>
+                        <a class="btn btn-fill" style="color: #6896B7;" data-toggle="modal" data-target="#portfolioItem5">
+                            <span class="glyphicon"></span>iPhone 13 Blue</a>
+                    </div>
+                </div>
+                <div id="portfolioItem1" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <a class="close" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span></a>
+                                <img class="img-res" src="https://www.apple.com/v/iphone-13/b/images/overview/design/red_finish__c441x0ljv9yu_large.jpg" alt="">
+                            </div>
+                            <div class="modal-body">
+                                <h4 class="modal-title">iPhone 13 Red</h4>
+                                <section id="add-user-module">
+                                    <form>
+                                        <hr />
+                                        <div class="form-group">
+                                            <label for="fullname">ชื่อจริง-นามสกุล</label>
+                                            <input
+                                            type="input"
+                                            data-key="fullname"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            <input
+                                            type="input"
+                                            data-key="email"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="model">รุ่น-สี</label>
+                                            <input
+                                            type="input"
+                                            data-key="model"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="value">จำนวน</label>
+                                            <input
+                                            type="input"
+                                            data-key="value"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-fill" id="add-user-btn">
+                                                สั่งซื้อ
+                                            </button>
+                                        </div>
+                                    </form>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="portfolioItem2" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <a class="close" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span></a>
+                                <img class="img-res" src="https://www.apple.com/v/iphone-13/b/images/overview/design/midnight_finish__c0zmupb1wr2a_large.jpg" alt="">
+                            </div>
+                            <div class="modal-body">
+                                <h4 class="modal-title">iPhone 13 Midnight</h4>
+                                <section id="add-user-module">
+                                    <form>
+                                        <hr />
+                                        <div class="form-group">
+                                            <label for="fullname">ชื่อจริง-นามสกุล</label>
+                                            <input
+                                            type="input"
+                                            data-key="fullname"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            <input
+                                            type="input"
+                                            data-key="email"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="model">รุ่น-สี</label>
+                                            <input
+                                            type="input"
+                                            data-key="model"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="value">จำนวน</label>
+                                            <input
+                                            type="input"
+                                            data-key="value"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-fill" id="add-user-btn">
+                                                สั่งซื้อ
+                                            </button>
+                                        </div>
+                                    </form>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="portfolioItem3" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <a class="close" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span></a>
+                                <img class="img-res" src="https://www.apple.com/v/iphone-13/b/images/overview/design/starlight_finish__e4on9og9dr42_large.jpg" alt="">
+                            </div>
+                            <div class="modal-body" id="add-user-module">
+                                <h4 class="modal-title">iPhone 13 Starlight</h4>
+                                <section id="add-user-module">
+                                    <form>
+                                        <hr />
+                                        <div class="form-group">
+                                            <label for="fullname">ชื่อจริง-นามสกุล</label>
+                                            <input
+                                            type="input"
+                                            data-key="fullname"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            <input
+                                            type="input"
+                                            data-key="email"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="model">รุ่น-สี</label>
+                                            <input
+                                            type="input"
+                                            data-key="model"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="value">จำนวน</label>
+                                            <input
+                                            type="input"
+                                            data-key="value"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-fill" id="add-user-btn">
+                                                สั่งซื้อ
+                                            </button>
+                                        </div>
+                                    </form>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="portfolioItem4" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <a class="close" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span></a>
+                                <img class="img-res" src="https://www.apple.com/v/iphone-13/b/images/overview/design/pink_finish__f0iydhc82r2a_large.jpg" alt="">
+                            </div>
+                            <div class="modal-body" id="add-user-module">
+                                <h4 class="modal-title">iPhone 13 Pink</h4>
+                                <section id="add-user-module">
+                                    <form>
+                                        <hr />
+                                        <div class="form-group">
+                                            <label for="fullname">ชื่อจริง-นามสกุล</label>
+                                            <input
+                                            type="input"
+                                            data-key="fullname"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            <input
+                                            type="input"
+                                            data-key="email"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="model">รุ่น-สี</label>
+                                            <input
+                                            type="input"
+                                            data-key="model"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="value">จำนวน</label>
+                                            <input
+                                            type="input"
+                                            data-key="value"
+                                            class="form-control user-input"
+                                            id="myInput"
+                                            />
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-fill" id="add-user-btn">
+                                                สั่งซื้อ
+                                            </button>
+                                        </div>
+                                    </form>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="portfolioItem5" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <a class="close" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span></a>
+                                <img class="img-res" src="https://www.apple.com/v/iphone-13/b/images/overview/design/blue_finish__calta2yqeqoi_large.jpg" alt="">
+                            </div>
+                            <div class="modal-body" id="add-user-module">
+                                <h4 class="modal-title">iPhone 13 Blue</h4>
+                                <form>
+                                    <hr />
+                                    <div class="form-group">
+                                        <label for="fullname">ชื่อจริง-นามสกุล</label>
+                                        <input
+                                        type="input"
+                                        data-key="fullname"
+                                        class="form-control user-input"
+                                        id="myInput"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input
+                                        type="input"
+                                        data-key="email"
+                                        class="form-control user-input"
+                                        id="myInput"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="model">รุ่น-สี</label>
+                                        <input
+                                        type="input"
+                                        data-key="model"
+                                        class="form-control user-input"
+                                        id="myInput"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="value">จำนวน</label>
+                                        <input
+                                        type="input"
+                                        data-key="value"
+                                        class="form-control user-input"
+                                        id="myInput"
+                                        />
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-fill" id="add-user-btn">
+                                            สั่งซื้อ
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div><br/>
+            </div>
+        </div>
+    </div>
+   
+
+    <main id="main" class="site-main">
+
+        <section id="about" class="site-section section-about text-center">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <!-- <h2>เรื่องราว</h2>
+                        <img src="assets/img/lines.png" class="img-lines" alt="lines">
+                        <p>สวัสดีครับ ผมชื่อสุรวุฒิ สายทองอินทร์ เป็นนักศึกษาปี 2 คณะวิศวกรรมศาสตร์ มหาวิทยาลัยสงขลานครินทร์ วิทยาเขตหาดใหญ่ อำเภอหาดใหญ่ จังหวัดสงขลา </p>
+                        <a href="eng.html" class="btn btn-fill" target="_blank" download>ประวัติคณะวิศวกรรมศาสตร์กดที่นี่</a> -->
+                    </div>
+                </div>
+            </div>
+        </section><!-- /.secton-about -->
+        <section id="about" class="site-section section-about text-center">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <!-- <h2>ช่องแชทออนไลน์อิอิ</h2>
+                        <img src="assets/img/lines.png" class="img-lines" alt="lines">
+                        <iframe src="https://minnit.chat/MyBlog?embed&&nickname=" style="border:none;width:90%;height:500px;" allowTransparency="true"></iframe><br> -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div style="margin: 1em;" id="total-order">
+            <div class="container">
+                <div class="page-header">
+                    <h1>ยอดการสั่งซื้อ</h1>
+                </div>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Fullname</th>
+                        <th>E-mail</th>
+                        <th>Model</th>
+                        <th>Value</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                    </thead>
+                    <tbody id="displayTable"></tbody>
+                </table>
+                <!-- <div class="alert alert-danger" role="alert">
+                    <b
+                    >Do not delete original data! Please add your own data for
+                    deleting!</b
+                    >
+                </div> -->
+                <section id="add-user-module">
+                    <form>
+                        <div class="form-group">
+                            <label for="fullname">ชื่อจริง-นามสกุล</label>
+                            <input
+                            type="input"
+                            data-key="fullname"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input
+                            type="input"
+                            data-key="email"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="model">รุ่น-สี</label>
+                            <input
+                            type="input"
+                            data-key="model"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="value">จำนวน</label>
+                            <input
+                            type="input"
+                            data-key="value"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-fill" id="add-user-btn">
+                                    สั่งซื้อ
+                                </button>
+                            </div>
+                    </form>
+                </section>
+                <!-- <section id="add-user-module">
+                    <form>
+                        <hr />
+                        <h4>Add User</h4>
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input
+                            type="input"
+                            data-key="username"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="email">E-mail:</label>
+                            <input
+                            type="email"
+                            data-key="email"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input
+                            type="input"
+                            data-key="password"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="fullname">Full name</label>
+                            <input
+                            type="input"
+                            data-key="fullname"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="bio">Bio</label>
+                            <input
+                            type="input"
+                            data-key="bio"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="topic">Topic</label>
+                            <input
+                            type="input"
+                            data-key="topic"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="story">Story</label>
+                            <input
+                            type="input"
+                            data-key="story"
+                            class="form-control user-input"
+                            id="myInput"
+                            />
+                        </div>
+                        <button type="button" class="btn btn-default" id="add-user-btn">
+                            add user
+                        </button>
+                    </form>
+                </section> -->
+            </div>
+        </div>
+        <div id="chartContainer" style="height: 370px; width: 100%;"></div>
+        <p class="text-center">ร้านจอง iPhone 13 โดยที่สามารถกดเข้าไปที่ iPhone 13 แต่ละสีแล้วกรอก ข้อมูลติดต่อและจำนวนได้เลย สามารถแสดงยอดสั่งซื้อทั้งหมดได้ด้วย</p>
+        <!-- <section id="contact" class="site-section section-form text-center">
+            <div class="container">                
+                <h3>กรอกรายละเอียดเพื่อติดต่อ</h3>
+                <img src="assets/img/lines.png" class="img-lines" alt="lines">
+                <form action="index.html">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <input type="text" name="name" class="form-control mt-x-0" placeholder="Name" required>
+                        </div>
+                        <div class="col-sm-6">
+                            <input type="email" name="email" class="form-control" placeholder="Email" required>   
+                        </div>
+                        <div class="col-sm-12">
+                            <textarea name="message" id="mesaage" class="form-control" placeholder="Message" required></textarea>
+                        </div>
+                    </div>
+                    <button href="#" class="btn btn-border" type="submit">ส่งข้อความ<span class="glyphicon glyphicon-send"></span></button>
+                </form>
+            </div>
+        </section> -->
+        
+        <section id="contact" class="site-section section-form text-center">
+            <div class="container" id="music">
+                <h3>เพลงออนไลน์</h3>
+                <img src="assets/img/lines.png" class="img-lines" alt="lines"><br>
+                <audio src="http://fm94.tv5.co.th:8000/fm94ch3" type="audio/mpeg" controls autoplay style="width:300px;height:60px;"></audio>
+            </div>
+        </section>
+        
+    </main>
+    
+    <!-- <footer id="colophon" class="site-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-4 col-xs-12">
+                    <a class="icon facebook-bg" href="http://t.coe.psu.ac.th/"><i class="icon-facebook"></i></a>
+                    <a class="icon twitter-bg" href="#"><i class="icon-twitter"></i></a>
+                    <a class="icon gplus-bg" href="#"><i class="icon-linkedin"></i></a>
+                    <a class="icon linkedin-bg" href="#"><i class="icon-gplus"></i></a>
+                </div>
+                <div class="col-sm-4 col-sm-offset-0 col-xs-6 col-xs-offset-3"><p class="copyright">©2021. R202@PSU</p></div>
+                <div class="col-sm-4 col-xs-3">
+                    <div class="text-right page-scroll">
+                        <a class="icon icon-up-bg" href="#hero"><i class="icon-up"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer> -->
+    
+    <!-- Bootstrap core JavaScript
+        ================================================== -->
+        <!-- Placed at the end of the document so the pages load faster -->
+        <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+        <script src="assets/js/skrollr.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-progressbar/0.9.0/bootstrap-progressbar.min.js"></script>
+        <script src="assets/js/jquery.countTo.min.js"></script>
+        <script src="assets/js/script.js"></script>
+        
+    </body>
+    </html>
+    

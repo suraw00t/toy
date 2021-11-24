@@ -1,0 +1,3 @@
+#!/bin/sh
+
+FLASK_ENV=development TOY_SETTINGS=$(pwd)/toy-development.cfg DEBUG=1 toy-web -H 0.0.0.0 -d

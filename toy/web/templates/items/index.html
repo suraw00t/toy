@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}From index items{% endblock %}
+
+{% block content %}
+
+<div style="padding: 1em;">
+    {% for item in items %}
+    <div class="ui compact message">
+       {{ item.name }} 
+    </div>
+    <div class="ui compact message">
+        {{ item.description }} 
+    </div>
+    <div class="ui compact message">
+        {{ item.weight }} 
+    </div><br/>
+    {% endfor %}
+    
+    {% for status in status %}
+    <div class="ui compact message">
+       {{ status.buyer }}
+    </div>
+    <div class="ui compact message">
+        {{ status.seller }}
+    </div>
+    <div class="ui compact message">
+        {{ status.item }}
+    </div><br/>
+    {% endfor %}
+</div>
+
+{% endblock %}

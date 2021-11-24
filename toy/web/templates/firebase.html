@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <title>Blog's Surawut</title>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js";
+        //import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-analytics.js";
+        import {
+            getDatabase,
+            ref,
+            set,
+            push,
+            update,
+            remove,
+            onChildAdded,
+        } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js";
+
+        window.onload = function () {
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            const firebaseConfig = {
+                apiKey: "AIzaSyBxJiLUszHv5nOuCXUI83JDCp8_m9Bk1B0",
+                authDomain: "fb-6310110533.firebaseapp.com",
+                databaseURL: "https://fb-6310110533-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "fb-6310110533",
+                storageBucket: "fb-6310110533.appspot.com",
+                messagingSenderId: "881904490096",
+                appId: "1:881904490096:web:10cf3c2d4633fc2dd446b5",
+                measurementId: "G-RG78E1ZYNF"
+            };
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            //const analytics = getAnalytics(app);
+            // Get a reference to the database service for =>>> 'users' collection (according to your realtime database)
+            // Reference messages collection
+            const database = ref(getDatabase(), "users/");
+
+            const $tableref = document.getElementById("displayTable");
+
+            onChildAdded(database, (data) => {
+                let childData = data.val();
+
+                let $td1 = document.createElement("td");
+                let $td2 = document.createElement("td");
+                let $td3 = document.createElement("td");
+                let $td5 = document.createElement("td");
+                let $td6 = document.createElement("td");
+                let $td7 = document.createElement("td");
+                let $td8 = document.createElement("td");
+
+                $td1.appendChild(document.createTextNode(childData.username));
+                $td2.appendChild(document.createTextNode(childData.password));
+                $td3.appendChild(document.createTextNode(childData.fullname));
+                $td5.appendChild(document.createTextNode(childData.email));
+                $td6.appendChild(document.createTextNode(childData.bio));
+                $td7.appendChild(document.createTextNode(childData.topic));
+                $td8.appendChild(document.createTextNode(childData.story));
+
+                /// create cell for delete icon
+                let $td4 = document.createElement("td");
+                let deleteIconUI = document.createElement("a");
+                deleteIconUI.className += "glyphicon glyphicon-trash";
+                /// create attribute of user id for reference in deletion
+                deleteIconUI.setAttribute("userid", data.key);
+                deleteIconUI.setAttribute("onClick", "window.location.reload()");
+                deleteIconUI.addEventListener("click", deleteButtonClicked);
+                $td4.appendChild(deleteIconUI);
+                
+                let $td9 = document.createElement("td");
+                let editIconUI = document.createElement("a");
+                editIconUI.className += "glyphicon glyphicon-edit";
+
+                editIconUI.setAttribute("userid", data.key);
+                //editIconUI.setAttribute("onClick", "window.location.reload()");
+                editIconUI.addEventListener("click", editButtonClicked);
+                $td9.appendChild(editIconUI);
+
+
+
+                let $tr = document.createElement("tr");
+                $tr.setAttribute("id", data.key);
+                $tr.appendChild($td1);
+                $tr.appendChild($td2);
+                $tr.appendChild($td3);
+                $tr.appendChild($td5);
+                $tr.appendChild($td6);
+                $tr.appendChild($td7);
+                $tr.appendChild($td8);
+                $tr.appendChild($td9);
+                $tr.appendChild($td4);
+
+                $tableref.appendChild($tr);
+            });
+        };
+
+      //creat function to Insert data
+    const addUserBtnUI = document.getElementById("add-user-btn");
+    addUserBtnUI.addEventListener("click", addUserBtnClicked);
+
+      /// create function for data insertion
+    function addUserBtnClicked() {
+        const addUserInputsUI = document.getElementsByClassName("user-input");
+        // this object will hold the new user information
+        let newUser = {};
+
+        // loop through View to get the data for the model
+        for (let i = 0, len = addUserInputsUI.length; i < len; i++) {
+            /// get data from html form using attribute name
+            let key = addUserInputsUI[i].getAttribute("data-key");
+            let value = addUserInputsUI[i].value;
+            //console.log(i);
+            //console.log(value);
+            //console.log(key);
+            newUser[key] = value;
+        }
+
+        const userListRef = ref(getDatabase(), "users");
+        const newUserRef = push(userListRef);
+        set(newUserRef, newUser);
+        }
+
+
+        function editButtonClicked(e){
+            e.stopPropagation();
+
+            var userID = e.target.getAttribute("userid");
+            //console.log(userID);
+            //console.log("Hello world");
+        }
+      //creat function to Delete data
+        function deleteButtonClicked(e) {
+        e.stopPropagation();
+        /// get data id which selected by user
+        var userID = e.target.getAttribute("userid");
+        console.log(userID);
+        /// delete that data from database
+        remove(ref(getDatabase(), "users/" + userID));
+      }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>Realtime Database Firebase example</h1>
+        </div>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Fullname</th>
+                <th>E-mail</th>
+                <th>Bio</th>
+                <th>Topic</th>
+                <th>Story</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+            </thead>
+            <tbody id="displayTable"></tbody>
+        </table>
+        <div class="alert alert-danger" role="alert">
+            <b
+            >Do not delete original data! Please add your own data for
+            deleting!</b
+            >
+        </div>
+        <section id="add-user-module">
+            <form>
+            <hr />
+            <h4>Add User</h4>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input
+                type="input"
+                data-key="username"
+                class="form-control user-input"
+                id="myInput"
+                />
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input
+                type="email"
+                data-key="email"
+                class="form-control user-input"
+                id="myInput"
+                />
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                type="input"
+                data-key="password"
+                class="form-control user-input"
+                id="myInput"
+                />
+            </div>
+            <div class="form-group">
+                <label for="fullname">Full name</label>
+                <input
+                type="input"
+                data-key="fullname"
+                class="form-control user-input"
+                id="myInput"
+                />
+            </div>
+            <div class="form-group">
+                <label for="bio">Bio</label>
+                <input
+                type="input"
+                data-key="bio"
+                class="form-control user-input"
+                id="myInput"
+                />
+            </div>
+            <div class="form-group">
+                <label for="topic">Topic</label>
+                <input
+                type="input"
+                data-key="topic"
+                class="form-control user-input"
+                id="myInput"
+                />
+            </div>
+            <div class="form-group">
+                <label for="story">Story</label>
+                <input
+                type="input"
+                data-key="story"
+                class="form-control user-input"
+                id="myInput"
+                />
+            </div>
+            <button type="button" class="btn btn-default" id="add-user-btn">
+                add user
+            </button>
+            </form>
+        </section>
+    </div>
+</body>
+</html>

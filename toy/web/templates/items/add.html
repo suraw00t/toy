@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}From add{% endblock %}
+
+{% block content %}
+
+<div style="padding: 1em;">
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="ui form">
+            <div class="field">
+                <label>{{ form.name.label }}</label>
+                {{ form.name }}
+            </div>
+        </div>
+        <div class="ui form">
+            <div class="field">
+                <label>{{ form.description.label }}</label>
+                {{ form.description }}
+            </div>
+        </div>
+        <div class="ui form">
+            <div class="field">
+                <label>{{ form.weight.label }}</label>
+                {{ form.weight }}
+            </div>
+        </div>
+        <div style="padding: 1em;">
+            <button class="ui primary button" type="submit">
+                Add
+            </button>
+            <a class="ui button" href="{{ url_for('items.index') }}"">
+                Discard
+            </a>
+        </div>
+    </form>
+
+    
+</div>
+
+{% endblock %}
